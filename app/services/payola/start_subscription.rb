@@ -20,6 +20,19 @@ module Payola
 
         customer = find_or_create_customer
 
+        card = customer.sources.data.first
+
+        # pre-authorize
+        charge = Stripe::Charge.create({
+                                           amount: subscription.amount,
+                                           currency: subscription.currency,
+                                           customer: customer.id,
+                                           capture: false
+                                       }, secret_key)
+
+        charge.refund
+
+
         create_params = {
           plan: subscription.plan.stripe_id,
           quantity: subscription.quantity,
